@@ -1,1 +1,19 @@
-{}
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://raw.githubusercontent.com/synapticnoise/schema-test/master/svd-db-01.json",
+	"title": "SVD DB Version 1",
+	"description": "SVD DB Version 1",
+	"type": "object",
+	"properties": {
+		"DatabaseVersion": {
+			"type": "integer"
+		},
+		"DisplayVersion": {
+			"type": "string"
+		},
+		"Operations": {
+			"type": "array"
+		},
+		"required": ["DatabaseVersion", "DisplayVersion", "Operations"]
+	}
+}
