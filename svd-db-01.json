@@ -1,5 +1,5 @@
 {
-	"$schema": "https://json-schema.org/draft-07/schema#",
+	"$schema": "http://json-schema.org/draft/2020-12/schema#",
 	"$id": "https://raw.githubusercontent.com/synapticnoise/schema-test/master/svd-db-01.json",
 	"title": "SVD DB Version 1",
 	"description": "SVD DB Version 1",
