@@ -1,9 +1,9 @@
 {
-	"$schema": "",
+	"$schema": "https://raw.githubusercontent.com/synapticnoise/schema-test/master/schema-catalog.json",
 	"schemas": [
 		{
-			"name": "",
-			"description": "",
+			"name": "SVD-DB Version 1",
+			"description": "SVD Database Schema",
 			"fileMatch": [],
 			"url": ""
 		}
