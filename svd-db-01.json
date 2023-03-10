@@ -1,19 +1,269 @@
 {
-	"$schema": "http://json-schema.org/draft-07/schema",
-	"$id": "https://raw.githubusercontent.com/synapticnoise/schema-test/master/svd-db-01.json",
-	"title": "SVD DB Version 1",
-	"description": "SVD DB Version 1",
-	"type": "object",
-	"properties": {
-		"DatabaseVersion": {
-			"type": "integer"
-		},
-		"DisplayVersion": {
-			"type": "string"
-		},
-		"Operations": {
-			"type": "array"
-		}
-	},
-	"required": ["DatabaseVersion", "DisplayVersion", "Operations"]
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "DatabaseVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "DisplayVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "Operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "oneOf": [
+          {"$ref": "#/definitions/createTableOperation"},
+          {"$ref": "#/definitions/dropTableOperation"},
+          {"$ref": "#/definitions/createIndexOperation"},
+          {"$ref": "#/definitions/dropIndexOperation"},
+          {"$ref": "#/definitions/alterTableOperation"}
+        ]
+      }
+    }
+  },
+  "required": ["DatabaseVersion", "DisplayVersion", "Operations"],
+  "definitions": {
+    "tableOperation": {
+      "properties": {
+        "TableName": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The table name."
+        }
+      },
+      "required": ["TableName"]
+    },
+    "templateTableOperation": {
+      "properties": {
+        "TemplateTable": {
+          "type": "string",
+          "enum": ["OutputPoints", "OutputPointBlobs", "ProcessedAlerts"],
+          "description": "The template table type."
+        }
+      },
+      "required": ["TemplateTable"]
+    },
+    "dataType" : {
+      "type": "string",
+      "enum": ["Double", "Int32", "Int64", "Boolean", "Blob"],
+      "description": "The data type of the column."
+    },
+    "lengthDataType" : {
+      "type": "string",
+      "enum": ["String"],
+      "description": "The data type of the column."
+    },
+    "columnType": {
+      "properties": {
+        "Type": {"$ref": "#/definitions/dataType"}
+      },
+      "required": ["Type"]
+    },
+    "lengthColumnType": {
+      "properties": {
+        "Type": {"$ref": "#/definitions/lengthDataType"},
+        "Length": {"type": "integer", "minimum": 1, "description": "The length of the column."}
+      },
+      "required": ["Type", "Length"]
+    },
+    "createColumnDefinition": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The column name."
+        },
+        "PrimaryKeyOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "IsNullable": {
+          "type": "boolean"
+        },
+        "IsAutoIncrement": {
+          "type": "boolean"
+        },
+        "DefaultValue": {
+        }
+      },
+      "oneOf": [{"$ref": "#/definitions/columnType"}, {"$ref": "#/definitions/lengthColumnType"}],
+      "required": ["Name"]
+    },
+    "createTableOperation": {
+      "type": "object",
+      "properties": {
+        "Operation": {
+          "type": "string",
+          "enum": ["CreateTable"]
+        },
+        "Columns": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/definitions/createColumnDefinition"}
+        }
+      },
+      "required": ["Operation"],
+      "oneOf": [{"$ref": "#/definitions/tableOperation"}, {"$ref": "#/definitions/templateTableOperation"}]
+    },
+    "dropTableOperation": {
+      "type": "object",
+      "properties": {
+        "Operation": {
+          "type": "string",
+          "enum": ["DropTable"]
+        }
+      },
+      "required": ["Operation"],
+      "oneOf": [{"$ref": "#/definitions/tableOperation"}, {"$ref": "#/definitions/templateTableOperation"}],
+    },
+    "indexColumnDefinition": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The column name."
+        },
+        "Order": {
+          "type": "string",
+          "enum": ["Ascending", "Descending"],
+          "description": "The column sort order."
+        }
+      },
+      "required": ["Name"]
+    },
+    "createIndexOperation": {
+      "type": "object",
+      "properties": {
+        "Operation": {
+          "type": "string",
+          "enum": ["CreateIndex"]
+        },
+        "Columns": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/definitions/indexColumnDefinition"}
+        }
+      },
+      "required": ["Operation"],
+      "oneOf": [{"$ref": "#/definitions/tableOperation"}, {"$ref": "#/definitions/templateTableOperation"}]
+    },
+    "dropIndexOperation": {
+      "type": "object",
+      "properties": {
+        "Operation": {
+          "type": "string",
+          "enum": ["DropIndex"]
+        },
+        "Name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The name of the index to drop."
+        }
+      },
+      "required": ["Operation"],
+      "oneOf": [{"$ref": "#/definitions/tableOperation"}, {"$ref": "#/definitions/templateTableOperation"}]
+    },
+    "addColumnOption": {
+      "type": "object",
+      "properties": {
+        "Operation": {
+          "type": "string",
+          "enum": ["AddColumn"]
+        },
+        "Definition": {"$ref": "#/definitions/createColumnDefinition"}
+      },
+      "required": ["Operation", "Definition"]
+    },
+    "dropColumnOption": {
+      "type": "object",
+      "properties": {
+        "Operation": {
+          "type": "string",
+          "enum": ["DropColumn"]
+        },
+        "Name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The name of the column to drop."
+        }
+      },
+      "required": ["Operation", "Name"]
+    },
+    "changeColumnDefinition": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The column name."
+        },
+        "Type": {
+          "oneOf": [{"$ref": "#/definitions/dataType"}, {"$ref": "#/definitions/lengthDataType"}]
+        },
+        "Length": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "PrimaryKeyOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "IsNullable": {
+          "type": "boolean"
+        },
+        "IsAutoIncrement": {
+          "type": "boolean"
+        },
+        "DefaultValue": {
+        },
+        "RemoveDefaultValue": {
+          "type": "boolean"
+        }
+      }
+    },
+    "changeColumnOption": {
+      "type": "object",
+      "properties": {
+        "Operation": {
+          "type": "string",
+          "enum": ["ChangeColumn"]
+        },
+        "Name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The name of the column to change."
+        },
+        "Definition": { "$ref": "#/definitions/changeColumnDefinition" }
+      },
+      "required": ["Operation", "Name", "Definition"]
+    },
+    "alterTableOperation": {
+      "type": "object",
+      "properties": {
+        "Operation": {
+          "type": "string",
+          "enum": ["AlterTable"]
+        },
+        "Options": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "oneOf": [
+              {"$ref": "#/definitions/addColumnOption"},
+              {"$ref": "#/definitions/dropColumnOption"},
+              {"$ref": "#/definitions/changeColumnOption"}
+            ]
+          }
+        }
+      },
+      "required": ["Operation"],
+      "oneOf": [{"$ref": "#/definitions/tableOperation"}, {"$ref": "#/definitions/templateTableOperation"}]
+    }
+  }
 }
